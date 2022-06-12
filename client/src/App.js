@@ -1,54 +1,61 @@
-import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import SearchBooks from "./pages/SearchBooks";
-import SavedBooks from "./pages/SavedBooks";
-import Navbar from "./components/Navbar";
+import React from 'react';
+
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import {
-  ApolloProvider,
   ApolloClient,
   InMemoryCache,
+  ApolloProvider,
   createHttpLink,
-} from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
+} from '@apollo/client';
 
-// Link to the GraphQL server on the backend
+import { setContext } from '@apollo/client/link/context';
+
+import SearchBooks from './pages/SearchBooks';
+import SavedBooks from './pages/SavedBooks';
+import Navbar from './components/Navbar';
+import LoginForm from './components/LoginForm';
+import SignupForm from './components/SignupForm';
+
 const httpLink = createHttpLink({
-  uri: "/graphql",
+  uri: '/graphql',
 });
-// "Middleware" function to retrieve token and combine it with the existing httpLink
-// We do not need the first parameter offered by setContext. Because of that, "_" is used as a placeholder to get to the second.
+
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("id_token");
+  const token = localStorage.getItem('id_token');
   return {
-    /* ensures the return headers of every request includes the token */
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : "",
+      authorization: token ? `Bearer ${token}` : '',
     },
   };
 });
-// Instantiate the Apollo Client instance to connect to the API endpoint
+
 const client = new ApolloClient({
-  // Combining authLink with httpLink
   link: authLink.concat(httpLink),
-  // Instantiate a new cache object
   cache: new InMemoryCache(),
 });
 
 function App() {
   return (
-    // Enable entire app to interact with the Apollo Client instance
     <ApolloProvider client={client}>
       <Router>
-        <>
+        <div className="flex-column justify-flex-start min-100-vh">
           <Navbar />
-          <Switch>
-            <Route exact path="/" component={SearchBooks} />
-            <Route exact path="/saved" component={SavedBooks} />
-            <Route render={() => <h1 className="display-2">Wrong page!</h1>} />
-          </Switch>
-        </>
+          <Route
+                path="/login"
+                element={<LoginForm />}
+              />
+              <Route
+                path="/signup"
+                element={<SignupForm />}
+              />
+            <Switch>
+              <Route exact path='/' component={SearchBooks} />
+              <Route exact path='/saved' component={SavedBooks} />
+              <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
+            </Switch>
+          </div>   
       </Router>
     </ApolloProvider>
   );
